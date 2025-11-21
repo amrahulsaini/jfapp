@@ -74,16 +74,45 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
             final studentData = StudentModel.fromJson(response.data!['student']);
             final batch = response.data!['batch'] ?? widget.batch;
 
-            // Navigate to profile screen
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(
-                builder: (context) => ProfileScreen(
-                  student: studentData,
-                  batch: batch,
+            // Show success animation and navigate
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Row(
+                  children: [
+                    Icon(Icons.check_circle, color: Colors.white),
+                    SizedBox(width: 12),
+                    Text('Welcome! Loading your profile...', style: TextStyle(fontWeight: FontWeight.w600)),
+                  ],
                 ),
+                backgroundColor: const Color(0xFF4CAF50),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                margin: const EdgeInsets.all(16),
+                duration: const Duration(seconds: 2),
               ),
-              (route) => false,
             );
+
+            // Navigate with loading indicator
+            await Future.delayed(const Duration(milliseconds: 800));
+            if (mounted) {
+              Navigator.of(context).pushAndRemoveUntil(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => ProfileScreen(
+                    student: studentData,
+                    batch: batch,
+                  ),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    var begin = const Offset(1.0, 0.0);
+                    var end = Offset.zero;
+                    var curve = Curves.easeInOutCubic;
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                    return SlideTransition(position: animation.drive(tween), child: child);
+                  },
+                  transitionDuration: const Duration(milliseconds: 500),
+                ),
+                (route) => false,
+              );
+            }
           } else {
             // Student not found in batch
             ScaffoldMessenger.of(context).showSnackBar(

@@ -12,14 +12,35 @@ class OtpLoginScreen extends StatefulWidget {
   State<OtpLoginScreen> createState() => _OtpLoginScreenState();
 }
 
-class _OtpLoginScreenState extends State<OtpLoginScreen> {
+class _OtpLoginScreenState extends State<OtpLoginScreen> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   String _selectedBatch = ApiConstants.activeBatch;
   bool _isLoading = false;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.15),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic));
+    _animationController.forward();
+  }
 
   @override
   void dispose() {
+    _animationController.dispose();
     _emailController.dispose();
     super.dispose();
   }
@@ -54,14 +75,22 @@ class _OtpLoginScreenState extends State<OtpLoginScreen> {
         setState(() => _isLoading = false);
 
         if (response.success) {
-          // Navigate to OTP verification screen
+          // Navigate to OTP verification screen with smooth transition
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => OtpVerifyScreen(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => OtpVerifyScreen(
                 email: _emailController.text.trim(),
                 batch: _selectedBatch,
               ),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                var begin = const Offset(1.0, 0.0);
+                var end = Offset.zero;
+                var curve = Curves.easeInOutCubic;
+                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                return SlideTransition(position: animation.drive(tween), child: child);
+              },
+              transitionDuration: const Duration(milliseconds: 400),
             ),
           );
         } else {
@@ -105,35 +134,50 @@ class _OtpLoginScreenState extends State<OtpLoginScreen> {
             constraints: BoxConstraints(
               minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom,
             ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 60),
-                  
-                  // Logo - Just the image in oval shape
-                  ClipOval(
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 15,
-                            offset: const Offset(0, 4),
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 60),
+                      
+                      // Logo - Just the image in oval shape with pulse animation
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0.95, end: 1.0),
+                        duration: const Duration(milliseconds: 1200),
+                        curve: Curves.easeInOut,
+                        builder: (context, scale, child) {
+                          return Transform.scale(
+                            scale: scale,
+                            child: child,
+                          );
+                        },
+                        child: ClipOval(
+                          child: Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFFF6B00).withOpacity(0.2),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: Image.asset(
+                              'assets/logo/jf-logo.png',
+                              fit: BoxFit.cover,
+                            ),
                           ),
-                        ],
+                        ),
                       ),
-                      child: Image.asset(
-                        'assets/logo/jf-logo.png',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
                   const SizedBox(height: 24),
 
                   // Title
@@ -310,7 +354,9 @@ class _OtpLoginScreenState extends State<OtpLoginScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 20),
-                ],
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
