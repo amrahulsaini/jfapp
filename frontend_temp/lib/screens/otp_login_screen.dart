@@ -108,10 +108,10 @@ class _OtpLoginScreenState extends State<OtpLoginScreen> {
             child: Form(
               key: _formKey,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 60),
                   
                   // Logo - Just the image in oval shape
                   ClipOval(

@@ -235,15 +235,17 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                         textAlign: TextAlign.center,
                         keyboardType: TextInputType.number,
                         maxLength: 1,
+                        autofocus: index == 0,
                         style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
                           color: Color(0xFF000000),
                         ),
                         decoration: InputDecoration(
                           counterText: '',
                           filled: true,
-                          fillColor: const Color(0xFFFAFAFA),
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(vertical: 16),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(color: Color(0xFFE0E0E0), width: 1.5),

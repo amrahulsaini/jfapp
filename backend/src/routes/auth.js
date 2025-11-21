@@ -112,6 +112,30 @@ router.post('/verify-otp', async (req, res) => {
 
         const session = sessions[0];
 
+        // Check if student exists in 2428main table (active batch)
+        let studentData = null;
+        try {
+            const students = await query(
+                'SELECT roll_no, enrollment_no, student_name, father_name, mother_name, branch, mobile_no, student_emailid, student_section FROM `2428main` WHERE student_emailid = ?',
+                [email]
+            );
+
+            if (students.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Student not found in active batch. Please contact jecrc@jecrcfoundation.live'
+                });
+            }
+
+            studentData = students[0];
+        } catch (dbError) {
+            console.error('Database query error:', dbError);
+            return res.status(500).json({
+                success: false,
+                message: 'Error verifying student data'
+            });
+        }
+
         // Update session: mark as verified and extend expiry to 30 days
         const newExpiresAt = new Date(Date.now() + (parseInt(process.env.SESSION_EXPIRY_DAYS || 30) * 24 * 60 * 60 * 1000));
         
@@ -127,7 +151,8 @@ router.post('/verify-otp', async (req, res) => {
                 sessionToken: session.session_token,
                 email: session.email,
                 batch: session.batch,
-                expiresAt: newExpiresAt
+                expiresAt: newExpiresAt,
+                student: studentData
             }
         });
     } catch (error) {
