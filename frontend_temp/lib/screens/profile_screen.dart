@@ -371,19 +371,19 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                         _buildInfoCard(
                           Icons.class_rounded,
                           'Section',
-                          widget.student.studentSection,
+                          widget.student.studentSection ?? 'N/A',
                           const Color(0xFFFF9800),
                         ),
                         _buildInfoCard(
                           Icons.phone_rounded,
                           'Mobile Number',
-                          widget.student.mobileNo,
+                          widget.student.mobileNo ?? 'N/A',
                           const Color(0xFF00BCD4),
                         ),
                         _buildInfoCard(
                           Icons.email_rounded,
                           'Email',
-                          widget.student.studentEmailid,
+                          widget.student.studentEmailId,
                           const Color(0xFFFF6B00),
                         ),
                         _buildInfoCard(
