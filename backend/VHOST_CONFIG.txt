@@ -1,0 +1,53 @@
+# CyberPanel/LiteSpeed VHost Configuration for Node.js Backend
+# Add this configuration to your virtual host file
+
+# External Processor for Node.js Backend API
+extprocessor jf-app-backend {
+  type                   proxy
+  address                127.0.0.1:3001
+  maxConns               100
+  pcKeepAliveTimeout     60
+  initTimeout            60
+  retryTimeout           0
+  respBuffer             0
+}
+
+# Rewrite Rules
+rewrite {
+  enable                 1
+  rules                  <<<EOR
+# Forward all /api/* requests to Node.js backend
+RewriteCond %{REQUEST_URI} ^/api/
+RewriteRule ^/api/(.*)$ http://jf-app-backend/api/$1 [P,L]
+EOR
+}
+
+# Alternative Configuration (if you want a subdomain like api.yourdomain.com):
+# Create a new virtual host with:
+docRoot                   /home/yourdomain/public_html/api
+vhDomain                  api.yourdomain.com
+
+extprocessor api-backend {
+  type                   proxy
+  address                127.0.0.1:3001
+  maxConns               100
+  pcKeepAliveTimeout     60
+  initTimeout            60
+  retryTimeout           0
+  respBuffer             0
+}
+
+rewrite {
+  enable                 1
+  rules                  <<<EOR
+# Forward all requests to Node.js backend
+RewriteRule ^/(.*)$ http://api-backend/$1 [P]
+EOR
+}
+
+# Instructions:
+# 1. Edit your virtual host configuration in CyberPanel
+# 2. Add the extprocessor block
+# 3. Add the rewrite rules
+# 4. Restart LiteSpeed: sudo systemctl restart lsws
+# 5. Start your Node.js app with PM2: pm2 start ecosystem.config.js
