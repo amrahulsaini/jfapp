@@ -1,125 +1,189 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const { body } = require('express-validator');
-const { validate } = require('../middleware/validator');
-const { generateToken } = require('../middleware/auth');
+const crypto = require('crypto');
 const { query } = require('../config/database');
+const { sendOTPEmail } = require('../services/email');
 
-// Register validation rules
-const registerValidation = [
-  body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-  body('name').trim().notEmpty().withMessage('Name is required')
-];
+// Allowed batches
+const ALLOWED_BATCHES = ['2024-2028', '2023-2027', '2025-2029'];
+const ALLOWED_EMAIL_DOMAIN = '@jecrc.ac.in';
 
-// Login validation rules
-const loginValidation = [
-  body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
-  body('password').notEmpty().withMessage('Password is required')
-];
+// Generate 6-digit OTP
+function generateOTP() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
-// POST /api/auth/register - Register new user
-router.post('/register', registerValidation, validate, async (req, res) => {
-  try {
-    const { email, password, name } = req.body;
+// Generate session token
+function generateSessionToken() {
+    return crypto.randomBytes(32).toString('hex');
+}
 
-    // Check if user already exists
-    const existingUser = await query(
-      'SELECT id FROM users WHERE email = ?',
-      [email]
-    );
+// POST /api/auth/send-otp - Send OTP to email
+router.post('/send-otp', async (req, res) => {
+    try {
+        const { email, batch, deviceInfo, ipAddress } = req.body;
 
-    if (existingUser.length > 0) {
-      return res.status(409).json({ 
-        error: 'User already exists',
-        message: 'An account with this email already exists' 
-      });
+        // Validate input
+        if (!email || !batch) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email and batch are required'
+            });
+        }
+
+        // Validate email domain
+        if (!email.toLowerCase().endsWith(ALLOWED_EMAIL_DOMAIN)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Only JECRC college emails (@jecrc.ac.in) are allowed'
+            });
+        }
+
+        // Validate batch
+        if (!ALLOWED_BATCHES.includes(batch)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid batch. Allowed batches: ' + ALLOWED_BATCHES.join(', ')
+            });
+        }
+
+        // Generate OTP and session token
+        const otp = generateOTP();
+        const sessionToken = generateSessionToken();
+        const expiresAt = new Date(Date.now() + (parseInt(process.env.OTP_EXPIRY_MINUTES || 10) * 60 * 1000));
+
+        // Delete any existing unverified sessions for this email
+        await query(
+            'DELETE FROM user_sessions WHERE email = ? AND is_verified = FALSE',
+            [email]
+        );
+
+        // Insert new session
+        await query(
+            'INSERT INTO user_sessions (email, batch, otp_code, session_token, device_info, ip_address, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [email, batch, otp, sessionToken, deviceInfo || null, ipAddress || null, expiresAt]
+        );
+
+        // Send OTP email
+        await sendOTPEmail(email, otp);
+
+        res.json({
+            success: true,
+            message: 'OTP sent successfully',
+            data: {
+                email,
+                expiresIn: parseInt(process.env.OTP_EXPIRY_MINUTES || 10)
+            }
+        });
+    } catch (error) {
+        console.error('Send OTP error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error sending OTP. Please try again.'
+        });
     }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Insert new user
-    const result = await query(
-      'INSERT INTO users (email, password, name, created_at) VALUES (?, ?, ?, NOW())',
-      [email, hashedPassword, name]
-    );
-
-    const userId = result.insertId;
-
-    // Generate token
-    const token = generateToken(userId, email);
-
-    res.status(201).json({
-      message: 'User registered successfully',
-      token,
-      user: {
-        id: userId,
-        email,
-        name
-      }
-    });
-
-  } catch (error) {
-    console.error('Register error:', error);
-    res.status(500).json({ 
-      error: 'Registration failed',
-      message: 'An error occurred during registration'
-    });
-  }
 });
 
-// POST /api/auth/login - Login user
-router.post('/login', loginValidation, validate, async (req, res) => {
-  try {
-    const { email, password } = req.body;
+// POST /api/auth/verify-otp - Verify OTP and create session
+router.post('/verify-otp', async (req, res) => {
+    try {
+        const { email, otp } = req.body;
 
-    // Find user
-    const users = await query(
-      'SELECT id, email, password, name FROM users WHERE email = ?',
-      [email]
-    );
+        // Validate input
+        if (!email || !otp) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email and OTP are required'
+            });
+        }
 
-    if (users.length === 0) {
-      return res.status(401).json({ 
-        error: 'Invalid credentials',
-        message: 'Email or password is incorrect' 
-      });
+        // Find session with matching email and OTP
+        const sessions = await query(
+            'SELECT * FROM user_sessions WHERE email = ? AND otp_code = ? AND is_verified = FALSE AND expires_at > NOW()',
+            [email, otp]
+        );
+
+        if (sessions.length === 0) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid or expired OTP'
+            });
+        }
+
+        const session = sessions[0];
+
+        // Update session: mark as verified and extend expiry to 30 days
+        const newExpiresAt = new Date(Date.now() + (parseInt(process.env.SESSION_EXPIRY_DAYS || 30) * 24 * 60 * 60 * 1000));
+        
+        await query(
+            'UPDATE user_sessions SET is_verified = TRUE, verified_at = NOW(), expires_at = ? WHERE id = ?',
+            [newExpiresAt, session.id]
+        );
+
+        res.json({
+            success: true,
+            message: 'OTP verified successfully',
+            data: {
+                sessionToken: session.session_token,
+                email: session.email,
+                batch: session.batch,
+                expiresAt: newExpiresAt
+            }
+        });
+    } catch (error) {
+        console.error('Verify OTP error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error verifying OTP'
+        });
     }
+});
 
-    const user = users[0];
+// GET /api/auth/check-session - Validate session token
+router.get('/check-session', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({
+                success: false,
+                message: 'No session token provided'
+            });
+        }
 
-    // Verify password
-    const isValidPassword = await bcrypt.compare(password, user.password);
+        const sessionToken = authHeader.substring(7);
 
-    if (!isValidPassword) {
-      return res.status(401).json({ 
-        error: 'Invalid credentials',
-        message: 'Email or password is incorrect' 
-      });
+        // Find valid session
+        const sessions = await query(
+            'SELECT * FROM user_sessions WHERE session_token = ? AND is_verified = TRUE AND expires_at > NOW()',
+            [sessionToken]
+        );
+
+        if (sessions.length === 0) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid or expired session'
+            });
+        }
+
+        const session = sessions[0];
+
+        res.json({
+            success: true,
+            message: 'Session is valid',
+            data: {
+                email: session.email,
+                batch: session.batch,
+                expiresAt: session.expires_at
+            }
+        });
+    } catch (error) {
+        console.error('Check session error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error checking session'
+        });
     }
-
-    // Generate token
-    const token = generateToken(user.id, user.email);
-
-    res.json({
-      message: 'Login successful',
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name
-      }
-    });
-
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ 
-      error: 'Login failed',
-      message: 'An error occurred during login'
-    });
-  }
 });
 
 module.exports = router;
