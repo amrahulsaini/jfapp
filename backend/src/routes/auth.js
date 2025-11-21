@@ -139,7 +139,7 @@ router.post('/verify-otp', async (req, res) => {
     }
 });
 
-// GET /api/auth/check-session - Validate session token
+// GET /api/auth/check-session - Validate session token and get student data
 router.get('/check-session', async (req, res) => {
     try {
         const authHeader = req.headers.authorization;
@@ -168,13 +168,32 @@ router.get('/check-session', async (req, res) => {
 
         const session = sessions[0];
 
+        // Get student data from batch table
+        const batchTable = session.batch.replace('-', '');
+        const tableName = `${batchTable}main`;
+        
+        let studentData = null;
+        try {
+            const students = await query(
+                `SELECT roll_no, enrollment_no, student_name, father_name, mother_name, branch, mobile_no, student_emailid, student_section FROM \`${tableName}\` WHERE student_emailid = ?`,
+                [session.email]
+            );
+
+            if (students.length > 0) {
+                studentData = students[0];
+            }
+        } catch (dbError) {
+            console.error('Database query error:', dbError);
+        }
+
         res.json({
             success: true,
             message: 'Session is valid',
             data: {
                 email: session.email,
                 batch: session.batch,
-                expiresAt: session.expires_at
+                expiresAt: session.expires_at,
+                student: studentData
             }
         });
     } catch (error) {
@@ -182,6 +201,39 @@ router.get('/check-session', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error checking session'
+        });
+    }
+});
+
+// POST /api/auth/logout - Logout and delete session
+router.post('/logout', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({
+                success: false,
+                message: 'No session token provided'
+            });
+        }
+
+        const sessionToken = authHeader.substring(7);
+
+        // Delete session
+        await query(
+            'DELETE FROM user_sessions WHERE session_token = ?',
+            [sessionToken]
+        );
+
+        res.json({
+            success: true,
+            message: 'Logged out successfully'
+        });
+    } catch (error) {
+        console.error('Logout error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error logging out'
         });
     }
 });
