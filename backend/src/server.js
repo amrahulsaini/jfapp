@@ -48,11 +48,20 @@ app.use(`${API_PREFIX}/data`, dataRoutes);
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({ 
-    message: 'JF App Backend API',
-    version: '1.0.0',
+    message: '🎉 JF App Backend API - Auto-Deployment Working!',
+    version: '2.0.0',
+    status: 'Auto-deployed via GitHub Webhooks',
+    timestamp: new Date().toISOString(),
     endpoints: {
       health: '/health',
-      api: API_PREFIX
+      api: API_PREFIX,
+      auth: {
+        login: `${API_PREFIX}/auth/login`,
+        register: `${API_PREFIX}/auth/register`
+      },
+      users: {
+        profile: `${API_PREFIX}/users/profile`
+      }
     }
   });
 });
