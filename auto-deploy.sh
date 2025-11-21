@@ -30,15 +30,21 @@ if [ $? -ne 0 ]; then
 fi
 
 # Navigate to backend
-cd backend
+cd backend || exit 1
 
-# Install/update dependencies
+# Install/update dependencies (remove --production to install all deps including devDependencies)
 log_message "Installing/updating dependencies..."
-npm install --production
+npm install
 
 if [ $? -ne 0 ]; then
     log_message "ERROR: npm install failed"
     exit 1
+fi
+
+# Verify nodemailer is installed
+if ! npm list nodemailer > /dev/null 2>&1; then
+    log_message "nodemailer not found, installing explicitly..."
+    npm install nodemailer
 fi
 
 # Restart application with PM2
