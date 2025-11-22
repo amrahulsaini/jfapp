@@ -189,16 +189,16 @@ class PaymentService {
       if (verifyResponse.statusCode == 200) {
         final data = json.decode(verifyResponse.body);
         if (data['success'] == true) {
-          onComplete(true);
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Payment successful! Plan activated 🎉'),
                 backgroundColor: Color(0xFF34C759),
+                duration: Duration(seconds: 3),
               ),
             );
-            Navigator.pop(context, true);
           }
+          onComplete(true);
           return;
         }
       }

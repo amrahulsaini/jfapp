@@ -53,13 +53,9 @@ class _PlansScreenState extends State<PlansScreen> {
       // Initiate payment - this will open Razorpay
       await _paymentService.initiatePurchase(context, plan, (success) {
         // This callback is called after payment is completed/failed
-        if (mounted) {
-          Navigator.pop(context); // Close loading dialog if still open
-          
-          if (success) {
-            // Payment verified successfully - navigate back
-            Navigator.pop(context, true);
-          }
+        if (mounted && success) {
+          // Payment verified successfully - navigate back to home
+          Navigator.of(context).popUntil((route) => route.isFirst);
         }
       });
       
