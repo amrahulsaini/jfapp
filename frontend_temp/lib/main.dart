@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'config/theme.dart';
 import 'providers/auth_provider.dart';
 import 'services/storage_service.dart';
-import 'screens/otp_login_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
         title: 'JF Foundation',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        home: const OtpLoginScreen(),
+        home: const SplashScreen(),
       ),
     );
   }
