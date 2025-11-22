@@ -5,6 +5,7 @@ import 'dart:convert';
 import '../config/api_constants.dart';
 import '../models/student_model.dart';
 import '../services/api_service.dart';
+import '../services/update_service.dart';
 import 'profile_screen.dart';
 import 'results_screen.dart';
 import 'plans_screen.dart';
@@ -45,6 +46,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
     _fetchStudents();
     _searchController.addListener(_filterStudents);
+    
+    // Check for updates after 2 seconds
+    Future.delayed(Duration(seconds: 2), () {
+      if (mounted) {
+        UpdateService().checkForUpdates(context);
+      }
+    });
   }
 
   @override
