@@ -64,12 +64,18 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       
       final response = await apiService.checkSession();
       print('Session check response: ${response.success}');
+      print('Session check data: ${response.data}');
 
       if (!mounted) return;
 
-      if (response.success && response.data != null) {
+      if (response.success && response.data != null && response.data!.containsKey('student')) {
         // Session is valid, parse student data and go to home
         final studentData = response.data!['student'];
+        if (studentData == null) {
+          print('Student data is null in response');
+          _navigateToLogin();
+          return;
+        }
         final student = StudentModel.fromJson(studentData);
         final batch = response.data!['batch'] ?? '2024-2028';
 

@@ -194,8 +194,10 @@ router.get('/check-session', async (req, res) => {
         const session = sessions[0];
 
         // Get student data from batch table
-        const batchTable = session.batch.replace('-', '');
+        const batchTable = session.batch.replace(/-/g, '');
         const tableName = `${batchTable}main`;
+        
+        console.log('Checking session for batch:', session.batch, 'table:', tableName, 'email:', session.email);
         
         let studentData = null;
         try {
@@ -204,11 +206,15 @@ router.get('/check-session', async (req, res) => {
                 [session.email]
             );
 
+            console.log('Students found:', students.length);
+            
             if (students.length > 0) {
                 studentData = students[0];
+            } else {
+                console.error('No student found in table', tableName, 'for email', session.email);
             }
         } catch (dbError) {
-            console.error('Database query error:', dbError);
+            console.error('Database query error for table', tableName, ':', dbError);
         }
 
         res.json({

@@ -49,9 +49,13 @@ class _ResultsScreenState extends State<ResultsScreen> with SingleTickerProvider
 
   Future<void> _fetchResults() async {
     try {
+      print('Fetching results for roll number: ${widget.student.rollNo}');
       final response = await http.get(
         Uri.parse('${ApiConstants.baseUrl}/results/${widget.student.rollNo}'),
       );
+
+      print('Results API status: ${response.statusCode}');
+      print('Results API response: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
