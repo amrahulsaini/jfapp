@@ -6,6 +6,7 @@ const db = require('../config/database');
 // GET /api/data/students - Get all students from 2428main table
 router.get('/students', async (req, res) => {
   try {
+    console.log('Fetching all students from 2428main table...');
     const [students] = await db.execute(
       `SELECT 
         roll_no,
@@ -20,7 +21,8 @@ router.get('/students', async (req, res) => {
       FROM 2428main
       ORDER BY roll_no ASC`
     );
-
+    
+    console.log(`Successfully fetched ${students.length} students`);
     res.json({
       success: true,
       message: 'Students retrieved successfully',
