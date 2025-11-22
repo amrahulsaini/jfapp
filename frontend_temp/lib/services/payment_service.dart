@@ -173,11 +173,6 @@ class PaymentService {
         },
         'theme': {
           'color': '#FF6B00'
-        },
-        'modal': {
-          'ondismiss': () {
-            print('Payment modal dismissed');
-          }
         }
       };
 
