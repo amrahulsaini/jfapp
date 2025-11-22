@@ -12,17 +12,23 @@ class NotificationService {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
   Future<void> initialize() async {
-    // Request permission for iOS
-    if (Platform.isIOS) {
-      await _firebaseMessaging.requestPermission(
-        alert: true,
-        announcement: false,
-        badge: true,
-        carPlay: false,
-        criticalAlert: false,
-        provisional: false,
-        sound: true,
-      );
+    // Request permission for notifications
+    await _firebaseMessaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
+    
+    // Request notification permission for Android 13+ (Tiramisu)
+    if (Platform.isAndroid) {
+      await _flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestNotificationsPermission();
     }
 
     // Initialize local notifications
@@ -132,11 +138,17 @@ class NotificationService {
     required String planName,
     required int viewsRemaining,
   }) async {
-    await showNotification(
-      title: '🎉 Plan Purchased Successfully!',
-      body: 'You have purchased $planName. $viewsRemaining results available.',
-      payload: 'plan_purchase',
-    );
+    print('showPlanPurchaseNotification called: $planName, $viewsRemaining views');
+    try {
+      await showNotification(
+        title: '🎉 Plan Purchased Successfully!',
+        body: 'You have purchased $planName. $viewsRemaining results available.',
+        payload: 'plan_purchase',
+      );
+      print('Notification successfully triggered');
+    } catch (e) {
+      print('Notification error: $e');
+    }
   }
 
   // Show plan expiring soon notification

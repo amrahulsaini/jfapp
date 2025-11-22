@@ -199,12 +199,15 @@ class PaymentService {
         final data = json.decode(verifyResponse.body);
         if (data['success'] == true) {
           // Show notification
+          print('Payment verified successfully, showing notification...');
           final purchase = data['purchase'];
           if (purchase != null) {
+            print('Showing notification for plan: ${purchase['plan_name']}');
             await _notificationService.showPlanPurchaseNotification(
               planName: purchase['plan_name'] ?? 'Plan',
               viewsRemaining: purchase['views_remaining'] ?? 0,
             );
+            print('Notification shown successfully');
           }
           
           if (_currentContext != null && _currentContext!.mounted) {
