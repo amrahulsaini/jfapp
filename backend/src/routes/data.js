@@ -18,7 +18,7 @@ router.get('/students', async (req, res) => {
         mobile_no,
         student_emailid as student_email_id,
         student_section
-      FROM 2428main
+      FROM \`2428main\`
       ORDER BY roll_no ASC`
     );
     
