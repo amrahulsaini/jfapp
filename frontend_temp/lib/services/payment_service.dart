@@ -149,16 +149,10 @@ class PaymentService {
       // Remove old listeners to avoid duplicates
       _razorpay!.clear();
       
-      // Set up event listeners
-      _razorpay!.on(Razorpay.EVENT_PAYMENT_SUCCESS, (PaymentSuccessResponse response) {
-        _handlePaymentSuccess(response);
-      });
-      _razorpay!.on(Razorpay.EVENT_PAYMENT_ERROR, (PaymentFailureResponse response) {
-        _handlePaymentError(response);
-      });
-      _razorpay!.on(Razorpay.EVENT_EXTERNAL_WALLET, (ExternalWalletResponse response) {
-        _handleExternalWallet(response);
-      });
+      // Set up event listeners - use method references directly, not closures
+      _razorpay!.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+      _razorpay!.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+      _razorpay!.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
 
       // Open Razorpay checkout
       var options = {
