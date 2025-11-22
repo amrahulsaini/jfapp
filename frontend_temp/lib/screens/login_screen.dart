@@ -4,6 +4,7 @@ import 'package:email_validator/email_validator.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/custom_textfield.dart';
 import '../widgets/loading_button.dart';
+import '../services/notification_service.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
 
@@ -40,6 +41,14 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (error == null) {
+      // Save FCM token after successful login
+      try {
+        await NotificationService().saveFCMTokenToBackend();
+        print('FCM token saved after login');
+      } catch (e) {
+        print('Error saving FCM token after login: $e');
+      }
+      
       // Success - Navigate to home
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const HomeScreen()),

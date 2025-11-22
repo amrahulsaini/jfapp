@@ -35,7 +35,7 @@ class NotificationService {
     }
     
     // Save FCM token to backend
-    await _saveFCMTokenToBackend();
+    await saveFCMTokenToBackend();
 
     // Initialize local notifications
     const AndroidInitializationSettings initializationSettingsAndroid =
@@ -197,7 +197,7 @@ class NotificationService {
     return await _firebaseMessaging.getToken();
   }
   
-  Future<void> _saveFCMTokenToBackend() async {
+  Future<void> saveFCMTokenToBackend() async {
     try {
       String? token = await _firebaseMessaging.getToken();
       if (token == null) return;
