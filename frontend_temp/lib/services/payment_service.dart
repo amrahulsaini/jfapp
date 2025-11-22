@@ -12,7 +12,7 @@ class PaymentService {
 
   Future<List<PlanModel>> getPlans() async {
     try {
-      final token = await _storageService.getSessionToken();
+      final token = await _storageService.getToken();
       final response = await http.get(
         Uri.parse('${ApiConstants.baseUrl}/payment/plans'),
         headers: {
@@ -37,7 +37,7 @@ class PaymentService {
 
   Future<Map<String, dynamic>> getMyPurchases() async {
     try {
-      final token = await _storageService.getSessionToken();
+      final token = await _storageService.getToken();
       final response = await http.get(
         Uri.parse('${ApiConstants.baseUrl}/payment/my-purchases'),
         headers: {
@@ -68,7 +68,7 @@ class PaymentService {
 
   Future<bool> canViewResult(String rollNo) async {
     try {
-      final token = await _storageService.getSessionToken();
+      final token = await _storageService.getToken();
       final response = await http.get(
         Uri.parse('${ApiConstants.baseUrl}/payment/can-view/$rollNo'),
         headers: {
@@ -89,7 +89,7 @@ class PaymentService {
 
   Future<void> recordView(String rollNo) async {
     try {
-      final token = await _storageService.getSessionToken();
+      final token = await _storageService.getToken();
       await http.post(
         Uri.parse('${ApiConstants.baseUrl}/payment/record-view'),
         headers: {
@@ -105,7 +105,7 @@ class PaymentService {
 
   Future<bool> initiatePurchase(BuildContext context, PlanModel plan) async {
     try {
-      final token = await _storageService.getSessionToken();
+      final token = await _storageService.getToken();
       
       // Create order
       final orderResponse = await http.post(
@@ -163,7 +163,7 @@ class PaymentService {
 
   void _handlePaymentSuccess(BuildContext context, PaymentSuccessResponse response) async {
     try {
-      final token = await _storageService.getSessionToken();
+      final token = await _storageService.getToken();
       
       // Verify payment on backend
       final verifyResponse = await http.post(
@@ -229,7 +229,7 @@ class PaymentService {
     required String description,
   }) async {
     try {
-      final token = await _storageService.getSessionToken();
+      final token = await _storageService.getToken();
       final response = await http.post(
         Uri.parse('${ApiConstants.baseUrl}/payment/premium-request'),
         headers: {
