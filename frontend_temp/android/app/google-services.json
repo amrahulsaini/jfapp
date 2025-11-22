@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "478540442120",
+    "project_id": "jffoundation-f1dab",
+    "storage_bucket": "jffoundation-f1dab.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:478540442120:android:d6c9c99940de8b56b97fbd",
+        "android_client_info": {
+          "package_name": "com.jecrcfoundation.jf_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5UIFQgtj1eKGQUhOhKqqMEJ5zAA8RF4M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

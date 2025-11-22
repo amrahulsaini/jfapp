@@ -50,19 +50,19 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_ANDROID_API_KEY',
-    appId: '1:YOUR_PROJECT_NUMBER:android:YOUR_APP_ID',
-    messagingSenderId: 'YOUR_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    storageBucket: 'YOUR_PROJECT_ID.appspot.com',
+    apiKey: 'AIzaSyB5UIFQgtj1eKGQUhOhKqqMEJ5zAA8RF4M',
+    appId: '1:478540442120:android:d6c9c99940de8b56b97fbd',
+    messagingSenderId: '478540442120',
+    projectId: 'jffoundation-f1dab',
+    storageBucket: 'jffoundation-f1dab.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'YOUR_IOS_API_KEY',
-    appId: '1:YOUR_PROJECT_NUMBER:ios:YOUR_APP_ID',
-    messagingSenderId: 'YOUR_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    storageBucket: 'YOUR_PROJECT_ID.appspot.com',
+    apiKey: 'AIzaSyB5UIFQgtj1eKGQUhOhKqqMEJ5zAA8RF4M',
+    appId: '1:478540442120:ios:YOUR_IOS_APP_ID',
+    messagingSenderId: '478540442120',
+    projectId: 'jffoundation-f1dab',
+    storageBucket: 'jffoundation-f1dab.firebasestorage.app',
     iosBundleId: 'com.jecrcfoundation.jfApp',
   );
 }
