@@ -1,15 +1,5 @@
 const jwt = require('jsonwebtoken');
-const mysql = require('mysql2/promise');
-const dbConfig = require('../config/database');
-
-// Database connection pool
-const pool = mysql.createPool(dbConfig);
-
-// Query helper
-const query = async (sql, params) => {
-  const [results] = await pool.execute(sql, params);
-  return results;
-};
+const { query } = require('../config/database');
 
 // Verify session token from user_sessions table
 const verifySessionToken = async (req, res, next) => {
