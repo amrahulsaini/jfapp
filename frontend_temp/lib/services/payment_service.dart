@@ -13,6 +13,11 @@ class PaymentService {
   Future<List<PlanModel>> getPlans() async {
     try {
       final token = await _storageService.getToken();
+      
+      if (token == null || token.isEmpty) {
+        throw Exception('No authentication token found. Please login again.');
+      }
+      
       final response = await http.get(
         Uri.parse('${ApiConstants.baseUrl}/payment/plans'),
         headers: {
@@ -20,6 +25,10 @@ class PaymentService {
           'Authorization': 'Bearer $token',
         },
       );
+
+      if (response.statusCode == 401) {
+        throw Exception('Session expired. Please login again.');
+      }
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -29,7 +38,7 @@ class PaymentService {
               .toList();
         }
       }
-      throw Exception('Failed to load plans');
+      throw Exception('Failed to load plans: ${response.statusCode}');
     } catch (e) {
       throw Exception('Error loading plans: $e');
     }

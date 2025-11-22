@@ -211,6 +211,22 @@ router.get('/can-view/:rollNo', authenticateToken, async (req, res) => {
     const { email } = req.user;
     const { rollNo } = req.params;
     
+    // Check if user is viewing their own result (match by email from student table)
+    const studentCheck = await query(
+      `SELECT student_emailid FROM \`2428main\` WHERE roll_no = ?`,
+      [rollNo]
+    );
+    
+    if (studentCheck.length > 0 && studentCheck[0].student_emailid === email) {
+      // User can view their own result without payment
+      return res.json({
+        success: true,
+        canView: true,
+        ownResult: true,
+        message: 'Viewing your own result'
+      });
+    }
+    
     // Check for active purchases
     const purchases = await query(
       `SELECT * FROM \`2428purchases\` 
@@ -278,6 +294,21 @@ router.post('/record-view', authenticateToken, async (req, res) => {
     
     if (!roll_no) {
       return res.status(400).json({ success: false, message: 'Roll number is required' });
+    }
+    
+    // Check if viewing own result - no recording needed
+    const studentCheck = await query(
+      `SELECT student_emailid FROM \`2428main\` WHERE roll_no = ?`,
+      [roll_no]
+    );
+    
+    if (studentCheck.length > 0 && studentCheck[0].student_emailid === email) {
+      // Own result - no need to record or decrement
+      return res.json({
+        success: true,
+        message: 'Own result viewed',
+        ownResult: true
+      });
     }
     
     // Get active purchase
