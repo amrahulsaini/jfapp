@@ -59,23 +59,7 @@ fi
 # Check application status
 pm2 status jf-app-backend
 
-# Deploy admin page to public_html
-log_message "Deploying admin page to public_html..."
-if [ -f "$APP_DIR/send-notification.html" ]; then
-    # Create admin directory if it doesn't exist
-    mkdir -p /home/jecrcfoundation.live/public_html/admin
-    
-    # Copy admin page
-    cp "$APP_DIR/send-notification.html" /home/jecrcfoundation.live/public_html/admin/
-    
-    # Set proper permissions
-    chmod 644 /home/jecrcfoundation.live/public_html/admin/send-notification.html
-    
-    log_message "✅ Admin page deployed successfully"
-else
-    log_message "⚠️ send-notification.html not found, skipping admin page deployment"
-fi
-
+log_message "✅ Admin page is served from backend/public directory"
 log_message "=== Auto-deployment completed successfully ==="
 log_message "Application is now running with latest code"
 

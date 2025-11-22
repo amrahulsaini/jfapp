@@ -7,11 +7,15 @@ const compression = require('compression');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const path = require('path');
 
 // Middleware
 app.use(helmet()); // Security headers
 app.use(compression()); // Compress responses
 app.use(morgan('combined')); // Logging
+
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, '../public')));
 
 // CORS configuration - Allow localhost for development
 const corsOptions = {

@@ -12,7 +12,9 @@ scp send-notification.html user@jecrcfoundation.live:/home/jecrcfoundation.live/
 ## Step 2: Access the Page
 
 Open in browser:
-**https://jecrcfoundation.live/admin/send-notification.html**
+**https://jecrcfoundation.live/api/admin/send-notification.html**
+
+(The admin page is now served directly from the backend server)
 
 ## Step 3: Test Notifications
 
@@ -74,10 +76,10 @@ if (enteredPassword !== ADMIN_PASSWORD) {
 
 ## Usage:
 
-1. Open: `https://jecrcfoundation.live/admin/send-notification.html`
+1. Open: `https://jecrcfoundation.live/api/admin/send-notification.html`
 2. Fill in title and message
 3. Use `{student_name}` for personalization
 4. Click send
 5. All logged-in users receive notification instantly!
 
-The page is now live and ready to use! 🚀
+The page is automatically deployed via GitHub webhook! 🚀
