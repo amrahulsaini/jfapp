@@ -30,6 +30,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   String? _errorMessage;
   final TextEditingController _searchController = TextEditingController();
   late AnimationController _animationController;
+  String? _selectedSection;
+  List<String> _sections = [];
 
   @override
   void initState() {
@@ -58,11 +60,24 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['success'] == true) {
+          final students = (data['data'] as List)
+              .map((json) => StudentModel.fromJson(json))
+              .toList();
+          
+          // Extract unique sections
+          final sections = students
+              .map((s) => s.studentSection?.toUpperCase())
+              .where((s) => s != null && s.isNotEmpty)
+              .cast<String>()
+              .toSet()
+              .toList();
+          sections.sort();
+          
           setState(() {
-            _students = (data['data'] as List)
-                .map((json) => StudentModel.fromJson(json))
-                .toList();
-            _filteredStudents = _students;
+            _students = students;
+            _filteredStudents = students;
+            _sections = ['All', ...sections];
+            _selectedSection = 'All';
             _isLoading = false;
           });
           _animationController.forward();
@@ -89,10 +104,20 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   void _filterStudents() {
     final query = _searchController.text.toLowerCase();
     setState(() {
+      var filtered = _students;
+      
+      // Apply section filter
+      if (_selectedSection != null && _selectedSection != 'All') {
+        filtered = filtered.where((student) {
+          return student.studentSection?.toUpperCase() == _selectedSection;
+        }).toList();
+      }
+      
+      // Apply search filter
       if (query.isEmpty) {
-        _filteredStudents = _students;
+        _filteredStudents = filtered;
       } else {
-        _filteredStudents = _students.where((student) {
+        _filteredStudents = filtered.where((student) {
           return student.studentName.toLowerCase().contains(query) ||
               student.rollNo.toLowerCase().contains(query) ||
               student.branch.toLowerCase().contains(query);
@@ -266,21 +291,47 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       );
                     },
                   ),
-                  _buildDrawerItem(
-                    icon: Icons.logout_rounded,
-                    title: 'Logout',
-                    textColor: const Color(0xFFFF3B30),
-                    onTap: () {
-                      Navigator.pop(context);
-                      _logout();
-                    },
-                  ),
                 ],
+              ),
+            ),
+            // Logout at bottom
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.grey.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                ),
+              ),
+              child: ListTile(
+                leading: const Icon(
+                  Icons.logout_rounded,
+                  color: Color(0xFFFF3B30),
+                  size: 24,
+                ),
+                title: const Text(
+                  'Logout',
+                  style: TextStyle(
+                    color: Color(0xFFFF3B30),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _logout();
+                },
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               ),
             ),
             // Footer
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(12),
               child: Text(
                 'JF App v1.0.0',
                 style: TextStyle(
@@ -380,7 +431,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       imageUrl: ApiConstants.getStudentPhotoUrl(student.rollNo),
                       width: double.infinity,
                       height: double.infinity,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
+                      alignment: Alignment.center,
                       placeholder: (context, url) => Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
@@ -631,14 +683,24 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       children: [
                         Row(
                           children: [
-                            // Menu Button
+                            // Menu Button with better touch
                             Builder(
-                              builder: (context) => IconButton(
-                                icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 28),
-                                onPressed: () {
-                                  Scaffold.of(context).openDrawer();
-                                },
-                                tooltip: 'Menu',
+                              builder: (context) => Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(12),
+                                  onTap: () {
+                                    Scaffold.of(context).openDrawer();
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    child: const Icon(
+                                      Icons.menu_rounded,
+                                      color: Colors.white,
+                                      size: 28,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -717,6 +779,71 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 ],
               ),
             ),
+                  const SizedBox(height: 12),
+            // Section Filter
+            if (!_isLoading && _errorMessage == null && _sections.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFFF6B00).withValues(alpha: 0.3)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.filter_list_rounded,
+                        color: Color(0xFFFF6B00),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Section:',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF000000),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: DropdownButton<String>(
+                          value: _selectedSection,
+                          isExpanded: true,
+                          underline: const SizedBox(),
+                          icon: const Icon(Icons.arrow_drop_down, color: Color(0xFFFF6B00)),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF000000),
+                          ),
+                          items: _sections.map((section) {
+                            return DropdownMenuItem(
+                              value: section,
+                              child: Text(section),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedSection = value;
+                              _filterStudents();
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             const SizedBox(height: 16),
             // Students Count
             if (!_isLoading && _errorMessage == null)
@@ -814,12 +941,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               ),
                             )
                           : GridView.builder(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                              padding: const EdgeInsets.all(20),
                               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
-                                childAspectRatio: 0.75,
-                                crossAxisSpacing: 16,
-                                mainAxisSpacing: 16,
+                                childAspectRatio: 0.68,
+                                crossAxisSpacing: 14,
+                                mainAxisSpacing: 14,
                               ),
                               itemCount: _filteredStudents.length,
                               itemBuilder: (context, index) {
