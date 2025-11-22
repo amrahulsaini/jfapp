@@ -34,6 +34,9 @@ class PurchaseModel {
   final String planName;
   final String planType;
   final int? viewsRemaining;
+  final int? viewsLimit;
+  final double amountPaid;
+  final bool isActive;
   final DateTime purchaseDate;
   final DateTime? expiryDate;
   final Map<String, dynamic> features;
@@ -43,6 +46,9 @@ class PurchaseModel {
     required this.planName,
     required this.planType,
     this.viewsRemaining,
+    this.viewsLimit,
+    required this.amountPaid,
+    required this.isActive,
     required this.purchaseDate,
     this.expiryDate,
     required this.features,
@@ -54,6 +60,9 @@ class PurchaseModel {
       planName: json['plan_name'],
       planType: json['plan_type'],
       viewsRemaining: json['views_remaining'],
+      viewsLimit: json['views_limit'],
+      amountPaid: double.parse(json['amount_paid']?.toString() ?? '0'),
+      isActive: json['is_active'] == 1 || json['is_active'] == true,
       purchaseDate: DateTime.parse(json['purchase_date']),
       expiryDate: json['expiry_date'] != null 
           ? DateTime.parse(json['expiry_date']) 

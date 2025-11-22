@@ -41,16 +41,6 @@ class _MyPlansScreenState extends State<MyPlansScreen> {
     }
   }
 
-  String _formatDate(String? dateStr) {
-    if (dateStr == null) return 'Never expires';
-    try {
-      final date = DateTime.parse(dateStr);
-      return DateFormat('dd MMM yyyy').format(date);
-    } catch (e) {
-      return dateStr;
-    }
-  }
-
   Color _getPlanColor(String planType) {
     switch (planType.toLowerCase()) {
       case 'premium':
@@ -283,8 +273,8 @@ class _MyPlansScreenState extends State<MyPlansScreen> {
             ),
             const SizedBox(height: 8),
             LinearProgressIndicator(
-              value: plan.viewsLimit != null && plan.viewsLimit! > 0
-                  ? plan.viewsRemaining / plan.viewsLimit!
+              value: plan.viewsLimit != null && plan.viewsLimit! > 0 && plan.viewsRemaining != null
+                  ? plan.viewsRemaining! / plan.viewsLimit!
                   : 0,
               backgroundColor: Colors.white.withOpacity(0.3),
               valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
@@ -335,7 +325,9 @@ class _MyPlansScreenState extends State<MyPlansScreen> {
               ),
               if (!isPremium)
                 Text(
-                  _formatDate(plan.expiryDate),
+                  plan.expiryDate != null 
+                      ? DateFormat('dd MMM yyyy').format(plan.expiryDate!) 
+                      : 'No expiry',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 13,
@@ -387,7 +379,7 @@ class _MyPlansScreenState extends State<MyPlansScreen> {
           children: [
             const SizedBox(height: 4),
             Text(
-              'Purchased on ${_formatDate(purchase.purchaseDate)}',
+              'Purchased on ${DateFormat('dd MMM yyyy').format(purchase.purchaseDate)}',
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey[600],

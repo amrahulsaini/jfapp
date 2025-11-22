@@ -105,7 +105,6 @@ class NotificationService {
       priority: Priority.high,
       showWhen: true,
       icon: '@mipmap/ic_launcher',
-      color: Color(0xFFFF6B00),
     );
 
     const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
