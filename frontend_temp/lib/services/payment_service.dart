@@ -5,9 +5,11 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../config/api_constants.dart';
 import '../models/plan_model.dart';
 import 'storage_service.dart';
+import 'notification_service.dart';
 
 class PaymentService {
   final StorageService _storageService = StorageService();
+  final NotificationService _notificationService = NotificationService();
   late Razorpay _razorpay;
 
   Future<List<PlanModel>> getPlans() async {
@@ -189,6 +191,15 @@ class PaymentService {
       if (verifyResponse.statusCode == 200) {
         final data = json.decode(verifyResponse.body);
         if (data['success'] == true) {
+          // Show notification
+          final purchase = data['purchase'];
+          if (purchase != null) {
+            await _notificationService.showPlanPurchaseNotification(
+              planName: purchase['plan_name'] ?? 'Plan',
+              viewsRemaining: purchase['views_remaining'] ?? 0,
+            );
+          }
+          
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(

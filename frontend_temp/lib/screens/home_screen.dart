@@ -8,6 +8,7 @@ import '../services/api_service.dart';
 import 'profile_screen.dart';
 import 'results_screen.dart';
 import 'plans_screen.dart';
+import 'my_plans_screen.dart';
 import 'premium_request_screen.dart';
 import 'otp_login_screen.dart';
 
@@ -271,9 +272,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     },
                   ),
                   _buildDrawerItem(
-                    icon: Icons.workspace_premium,
-                    title: 'View Plans',
+                    icon: Icons.card_membership,
+                    title: 'My Plans',
                     textColor: const Color(0xFFFF6B00),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const MyPlansScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.workspace_premium,
+                    title: 'Buy Plans',
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.push(
