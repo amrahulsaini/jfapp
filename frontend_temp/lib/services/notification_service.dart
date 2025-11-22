@@ -1,6 +1,9 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'dart:io';
+import 'storage_service.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -30,6 +33,9 @@ class NotificationService {
               AndroidFlutterLocalNotificationsPlugin>()
           ?.requestNotificationsPermission();
     }
+    
+    // Save FCM token to backend
+    await _saveFCMTokenToBackend();
 
     // Initialize local notifications
     const AndroidInitializationSettings initializationSettingsAndroid =
@@ -189,6 +195,43 @@ class NotificationService {
 
   Future<String?> getToken() async {
     return await _firebaseMessaging.getToken();
+  }
+  
+  Future<void> _saveFCMTokenToBackend() async {
+    try {
+      String? token = await _firebaseMessaging.getToken();
+      if (token == null) return;
+      
+      print('FCM Token: $token');
+      
+      final StorageService storageService = StorageService();
+      final sessionToken = await storageService.getToken();
+      
+      if (sessionToken == null) {
+        print('No session token, skipping FCM token save');
+        return;
+      }
+      
+      final response = await http.post(
+        Uri.parse('https://jecrcfoundation.live/api/notifications/save-token'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $sessionToken',
+        },
+        body: json.encode({
+          'fcm_token': token,
+          'device_type': Platform.isIOS ? 'ios' : 'android',
+        }),
+      );
+      
+      if (response.statusCode == 200) {
+        print('FCM token saved to backend successfully');
+      } else {
+        print('Failed to save FCM token: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error saving FCM token: $e');
+    }
   }
 }
 

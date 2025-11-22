@@ -54,6 +54,7 @@ const userRoutes = require('./routes/users');
 const dataRoutes = require('./routes/data');
 const resultsRoutes = require('./routes/results');
 const paymentRoutes = require('./routes/payment');
+const notificationRoutes = require('./routes/notifications');
 
 // API routes
 const API_PREFIX = process.env.API_PREFIX || '/api';
@@ -62,6 +63,7 @@ app.use(`${API_PREFIX}/users`, userRoutes);
 app.use(`${API_PREFIX}/data`, dataRoutes);
 app.use(`${API_PREFIX}/results`, resultsRoutes);
 app.use(`${API_PREFIX}/payment`, paymentRoutes);
+app.use(`${API_PREFIX}/notifications`, notificationRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
