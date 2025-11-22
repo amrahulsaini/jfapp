@@ -14,9 +14,6 @@ app.use(helmet()); // Security headers
 app.use(compression()); // Compress responses
 app.use(morgan('combined')); // Logging
 
-// Serve static files from public directory
-app.use(express.static(path.join(__dirname, '../public')));
-
 // CORS configuration - Allow localhost for development
 const corsOptions = {
   origin: function (origin, callback) {
@@ -79,6 +76,7 @@ app.get('/', (req, res) => {
     endpoints: {
       health: '/health',
       api: API_PREFIX,
+      admin: `${API_PREFIX}/admin/send-notification.html`,
       auth: {
         login: `${API_PREFIX}/auth/login`,
         register: `${API_PREFIX}/auth/register`
@@ -90,11 +88,15 @@ app.get('/', (req, res) => {
   });
 });
 
-// 404 handler
+// Static files MUST come before 404 handler
+app.use(`${API_PREFIX}`, express.static(path.join(__dirname, '../public')));
+
+// 404 handler - MUST be after all routes
 app.use((req, res) => {
   res.status(404).json({ 
     error: 'Not Found',
-    message: 'The requested endpoint does not exist'
+    message: 'The requested endpoint does not exist',
+    path: req.path
   });
 });
 
