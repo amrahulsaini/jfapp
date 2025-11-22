@@ -4,6 +4,7 @@ import '../config/api_constants.dart';
 import '../models/student_model.dart';
 import '../services/api_service.dart';
 import 'otp_login_screen.dart';
+import 'results_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final StudentModel student;
@@ -236,18 +237,49 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                           letterSpacing: -0.5,
                         ),
                       ),
-                      IconButton(
-                        icon: _isLoggingOut
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.assessment_outlined, color: Colors.white, size: 26),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                  pageBuilder: (context, animation, secondaryAnimation) => ResultsScreen(
+                                    student: widget.student,
+                                    batch: widget.batch,
+                                  ),
+                                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                    const begin = Offset(1.0, 0.0);
+                                    const end = Offset.zero;
+                                    const curve = Curves.easeOutCubic;
+                                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                    return SlideTransition(
+                                      position: animation.drive(tween),
+                                      child: child,
+                                    );
+                                  },
+                                  transitionDuration: const Duration(milliseconds: 600),
                                 ),
-                              )
-                            : const Icon(Icons.logout_rounded, color: Colors.white, size: 26),
-                        onPressed: _isLoggingOut ? null : _showLogoutDialog,
+                              );
+                            },
+                            tooltip: 'View Results',
+                          ),
+                          const SizedBox(width: 4),
+                          IconButton(
+                            icon: _isLoggingOut
+                                ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    ),
+                                  )
+                                : const Icon(Icons.logout_rounded, color: Colors.white, size: 26),
+                            onPressed: _isLoggingOut ? null : _showLogoutDialog,
+                          ),
+                        ],
                       ),
                     ],
                   ),

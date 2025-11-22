@@ -32,6 +32,7 @@ dependencies:
   fluttertoast: ^8.2.4
   loading_animation_widget: ^1.2.0+4
   cached_network_image: ^3.3.0
+  url_launcher: ^6.2.2
   
   # Forms & Validation
   email_validator: ^3.0.0
