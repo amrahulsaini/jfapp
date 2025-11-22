@@ -1,14 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const { query } = require('../config/database');
 
 // Get student results by roll number
 router.get('/:rollNo', async (req, res) => {
   try {
     const { rollNo } = req.params;
 
+    console.log('Fetching results for roll number:', rollNo);
+
     // Query the 2ndsemresults table
-    const [results] = await db.execute(
+    const results = await query(
       `SELECT 
         course_title,
         course_code,
@@ -18,11 +20,13 @@ router.get('/:rollNo', async (req, res) => {
         sgpa,
         remarks,
         subject_pdf_path
-      FROM 2ndsemresults
+      FROM \`2ndsemresults\`
       WHERE roll_no = ?
       ORDER BY course_code ASC`,
       [rollNo]
     );
+
+    console.log('Results found:', results.length);
 
     if (results.length === 0) {
       return res.status(404).json({
