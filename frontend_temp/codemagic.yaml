@@ -1,28 +1,51 @@
 workflows:
-  ios-release:
-    name: iOS Release Build
+  ios-workflow:
+    name: iOS Beta Build
     max_build_duration: 60
     instance_type: mac_mini_m1
+    working_directory: frontend_temp
     environment:
       flutter: stable
       xcode: latest
       cocoapods: default
-      vars:
-        BUNDLE_ID: "com.jecrcfoundation.jf_app"
-        APP_STORE_CONNECT_ISSUER_ID: YOUR_ISSUER_ID
-        APP_STORE_CONNECT_KEY_IDENTIFIER: YOUR_KEY_ID
-        APP_STORE_CONNECT_PRIVATE_KEY: YOUR_PRIVATE_KEY
     scripts:
       - name: Get Flutter packages
         script: |
           flutter packages pub get
-      - name: Build iOS
+      - name: Pod install
         script: |
-          flutter build ipa --release \
-            --export-options-plist=/Users/builder/export_options.plist
+          cd ios
+          pod install
+      - name: Build iOS (unsigned)
+        script: |
+          flutter build ios --release --no-codesign
     artifacts:
-      - build/ios/ipa/*.ipa
+      - build/ios/iphoneos/*.app
     publishing:
       email:
         recipients:
-          - your-email@example.com
+          - amrahulsaini@example.com
+  
+  android-workflow:
+    name: Android Beta Build
+    max_build_duration: 60
+    instance_type: linux_x2
+    working_directory: frontend_temp
+    environment:
+      flutter: stable
+      android_signing:
+        - jf_app_keystore
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+      - name: Build Android APK
+        script: |
+          flutter build apk --release
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk
+      - build/app/outputs/bundle/release/*.aab
+    publishing:
+      email:
+        recipients:
+          - amrahulsaini@example.com
