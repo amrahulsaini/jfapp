@@ -194,7 +194,8 @@ router.get('/check-session', async (req, res) => {
         const session = sessions[0];
 
         // Get student data from batch table
-        const batchTable = session.batch.replace(/-/g, '');
+        // Extract first 4 digits (e.g., "2024-2028" -> "2428")
+        const batchTable = session.batch.substring(2, 4) + session.batch.substring(7, 9);
         const tableName = `${batchTable}main`;
         
         console.log('Checking session for batch:', session.batch, 'table:', tableName, 'email:', session.email);
