@@ -7,6 +7,8 @@ import '../models/student_model.dart';
 import '../services/api_service.dart';
 import 'profile_screen.dart';
 import 'results_screen.dart';
+import 'plans_screen.dart';
+import 'premium_request_screen.dart';
 import 'otp_login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -264,6 +266,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             student: widget.currentStudent,
                             batch: widget.batch,
                           ),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.workspace_premium,
+                    title: 'View Plans',
+                    textColor: const Color(0xFFFF6B00),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PlansScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.support_agent,
+                    title: 'Premium Support',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PremiumRequestScreen(),
                         ),
                       );
                     },

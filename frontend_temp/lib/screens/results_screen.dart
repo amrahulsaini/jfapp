@@ -3,6 +3,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../config/api_constants.dart';
 import '../models/student_model.dart';
 import '../models/result_model.dart';
+import '../services/payment_service.dart';
+import 'plans_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
@@ -24,9 +26,11 @@ class ResultsScreen extends StatefulWidget {
 class _ResultsScreenState extends State<ResultsScreen> with SingleTickerProviderStateMixin {
   List<ResultModel> _results = [];
   bool _isLoading = true;
+  bool _isLocked = false;
   String? _errorMessage;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  final PaymentService _paymentService = PaymentService();
 
   @override
   void initState() {
@@ -38,13 +42,39 @@ class _ResultsScreenState extends State<ResultsScreen> with SingleTickerProvider
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
-    _fetchResults();
+    _checkAccessAndFetchResults();
   }
 
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _checkAccessAndFetchResults() async {
+    try {
+      // Check if user can view this result
+      final canView = await _paymentService.canViewResult(widget.student.rollNo);
+      
+      if (!canView) {
+        setState(() {
+          _isLocked = true;
+          _isLoading = false;
+        });
+        return;
+      }
+      
+      // Record the view
+      await _paymentService.recordView(widget.student.rollNo);
+      
+      // Fetch results
+      await _fetchResults();
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error checking access: ${e.toString()}';
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _fetchResults() async {
@@ -469,6 +499,113 @@ class _ResultsScreenState extends State<ResultsScreen> with SingleTickerProvider
                             valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF6B00)),
                           ),
                         )
+                      : _isLocked
+                          ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(32.0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(24),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            const Color(0xFFFF6B00).withOpacity(0.2),
+                                            const Color(0xFFFF8F3D).withOpacity(0.2),
+                                          ],
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.lock_outline_rounded,
+                                        size: 64,
+                                        color: Color(0xFFFF6B00),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 24),
+                                    const Text(
+                                      'Results Locked',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFF000000),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      'Purchase a plan to unlock and view student results',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 32),
+                                    Container(
+                                      width: double.infinity,
+                                      height: 56,
+                                      margin: const EdgeInsets.symmetric(horizontal: 20),
+                                      child: ElevatedButton(
+                                        onPressed: () async {
+                                          final result = await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => const PlansScreen(),
+                                            ),
+                                          );
+                                          if (result == true && mounted) {
+                                            // Plan purchased, reload
+                                            setState(() {
+                                              _isLoading = true;
+                                              _isLocked = false;
+                                            });
+                                            _checkAccessAndFetchResults();
+                                          }
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFFFF6B00),
+                                          foregroundColor: Colors.white,
+                                          elevation: 6,
+                                          shadowColor: const Color(0xFFFF6B00).withOpacity(0.4),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(16),
+                                          ),
+                                        ),
+                                        child: const Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.workspace_premium, size: 24),
+                                            SizedBox(width: 12),
+                                            Text(
+                                              'View Plans & Purchase',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w800,
+                                                letterSpacing: 0.5,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text(
+                                        'Go Back',
+                                        style: TextStyle(
+                                          color: Color(0xFFFF6B00),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
                       : _errorMessage != null
                           ? Center(
                               child: Padding(
