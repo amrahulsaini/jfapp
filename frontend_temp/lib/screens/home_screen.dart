@@ -6,6 +6,7 @@ import '../config/api_constants.dart';
 import '../models/student_model.dart';
 import '../services/api_service.dart';
 import 'profile_screen.dart';
+import 'results_screen.dart';
 import 'otp_login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -129,6 +130,201 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }
   }
 
+  Widget _buildDrawer() {
+    return Drawer(
+      child: Container(
+        color: const Color(0xFFFAFAFA),
+        child: Column(
+          children: [
+            // Drawer Header
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.only(top: 60, bottom: 24, left: 20, right: 20),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFFFF6B00), Color(0xFFFF8F3D)],
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 3),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 10,
+                        ),
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: CachedNetworkImage(
+                        imageUrl: ApiConstants.getStudentPhotoUrl(widget.currentStudent.rollNo),
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: Colors.white,
+                          child: const Icon(Icons.person, size: 40, color: Color(0xFFFF6B00)),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.white,
+                          child: const Icon(Icons.person, size: 40, color: Color(0xFFFF6B00)),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    widget.currentStudent.studentName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.currentStudent.rollNo,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Menu Items
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                children: [
+                  _buildDrawerItem(
+                    icon: Icons.home_rounded,
+                    title: 'Home',
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.person,
+                    title: 'My Profile',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProfileScreen(
+                            student: widget.currentStudent,
+                            batch: widget.batch,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.assessment_outlined,
+                    title: 'My Results',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ResultsScreen(
+                            student: widget.currentStudent,
+                            batch: widget.batch,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 24, thickness: 1),
+                  _buildDrawerItem(
+                    icon: Icons.info_outline_rounded,
+                    title: 'About JF Foundation',
+                    onTap: () {
+                      Navigator.pop(context);
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('About JF Foundation'),
+                          content: const Text(
+                            'JECRC Foundation (JF) is committed to providing quality education and fostering excellence in technical and professional studies.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Close'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.logout_rounded,
+                    title: 'Logout',
+                    textColor: const Color(0xFFFF3B30),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _logout();
+                    },
+                  ),
+                ],
+              ),
+            ),
+            // Footer
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                'JF App v1.0.0',
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color? textColor,
+  }) {
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: textColor ?? const Color(0xFF000000),
+        size: 24,
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: textColor ?? const Color(0xFF000000),
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      onTap: onTap,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+    );
+  }
+
   Widget _buildStudentCard(StudentModel student, int index) {
     return TweenAnimationBuilder<double>(
       duration: Duration(milliseconds: 600 + (index * 50)),
@@ -165,22 +361,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Photo
+              // Photo with better visibility
               Expanded(
-                flex: 6,
+                flex: 5,
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(20),
                       topRight: Radius.circular(20),
-                    ),
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: 0.02),
-                      ],
                     ),
                   ),
                   child: ClipRRect(
@@ -232,11 +420,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   ),
                 ),
               ),
-              // Details
+              // Details with View Results button
               Expanded(
-                flex: 4,
+                flex: 5,
                 child: Container(
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: const BorderRadius.only(
@@ -259,7 +447,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         child: Text(
                           student.studentName,
                           style: const TextStyle(
-                            fontSize: 14,
+                            fontSize: 13.5,
                             fontWeight: FontWeight.w800,
                             color: Color(0xFF000000),
                             height: 1.2,
@@ -273,7 +461,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         children: [
                           Icon(
                             Icons.badge_outlined,
-                            size: 13,
+                            size: 12,
                             color: Colors.grey[500],
                           ),
                           const SizedBox(width: 4),
@@ -281,7 +469,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             child: Text(
                               student.rollNo,
                               style: TextStyle(
-                                fontSize: 11,
+                                fontSize: 10.5,
                                 color: Colors.grey[700],
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 0.2,
@@ -297,7 +485,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         children: [
                           Expanded(
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
                                   colors: [Color(0xFFFF6B00), Color(0xFFFF8F3D)],
@@ -340,6 +528,49 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           ),
                         ],
                       ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 32,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ResultsScreen(
+                                  student: student,
+                                  batch: widget.batch,
+                                ),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF000000),
+                            foregroundColor: Colors.white,
+                            elevation: 2,
+                            shadowColor: Colors.black.withValues(alpha: 0.3),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: EdgeInsets.zero,
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.assessment_outlined, size: 14),
+                              SizedBox(width: 6),
+                              Text(
+                                'View Results',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -353,81 +584,111 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFFFF6B00), Color(0xFFFF8F3D)],
-                ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
+    return WillPopScope(
+      onWillPop: () async {
+        return await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Exit App'),
+            content: const Text('Do you want to exit the app?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
               ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'JF Students',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 26,
-                              letterSpacing: -0.5,
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Exit'),
+              ),
+            ],
+          ),
+        ) ?? false;
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFFAFAFA),
+        drawer: _buildDrawer(),
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFFFF6B00), Color(0xFFFF8F3D)],
+                  ),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            // Menu Button
+                            Builder(
+                              builder: (context) => IconButton(
+                                icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 28),
+                                onPressed: () {
+                                  Scaffold.of(context).openDrawer();
+                                },
+                                tooltip: 'Menu',
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Batch ${widget.batch}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          // My Profile Button
-                          IconButton(
-                            icon: const Icon(Icons.person, color: Colors.white, size: 26),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ProfileScreen(
-                                    student: widget.currentStudent,
-                                    batch: widget.batch,
+                            const SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'JF Students',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 26,
+                                    letterSpacing: -0.5,
                                   ),
                                 ),
-                              );
-                            },
-                            tooltip: 'My Profile',
-                          ),
-                          // Logout
-                          IconButton(
-                            icon: const Icon(Icons.logout_rounded, color: Colors.white, size: 26),
-                            onPressed: _logout,
-                            tooltip: 'Logout',
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Batch ${widget.batch}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            // My Profile Button
+                            IconButton(
+                              icon: const Icon(Icons.person, color: Colors.white, size: 26),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProfileScreen(
+                                      student: widget.currentStudent,
+                                      batch: widget.batch,
+                                    ),
+                                  ),
+                                );
+                              },
+                              tooltip: 'My Profile',
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   const SizedBox(height: 16),
                   // Search Bar
                   Container(
@@ -568,6 +829,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ),
           ],
         ),
+      ),
       ),
     );
   }
