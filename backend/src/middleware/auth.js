@@ -15,6 +15,7 @@ const verifyToken = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = decoded.id;
     req.userEmail = decoded.email;
+    req.user = { id: decoded.id, email: decoded.email };
     next();
   } catch (error) {
     return res.status(401).json({ 
@@ -55,6 +56,7 @@ const generateToken = (userId, email) => {
 
 module.exports = {
   verifyToken,
+  authenticateToken: verifyToken, // Alias for backward compatibility
   optionalAuth,
   generateToken
 };
