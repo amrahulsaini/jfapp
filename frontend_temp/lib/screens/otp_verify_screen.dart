@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/api_service.dart';
+import '../services/notification_service.dart';
 import '../widgets/loading_button.dart';
 import '../models/student_model.dart';
 import 'home_screen.dart';
@@ -92,6 +93,14 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
               ),
             );
 
+            // Save FCM token after successful login
+            try {
+              await NotificationService().saveFCMTokenToBackend();
+              print('FCM token saved after OTP login');
+            } catch (e) {
+              print('Error saving FCM token after OTP login: $e');
+            }
+            
             // Navigate with loading indicator
             await Future.delayed(const Duration(milliseconds: 800));
             if (mounted) {
