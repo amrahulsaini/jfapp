@@ -208,7 +208,7 @@ class _ResultsScreenState extends State<ResultsScreen> with SingleTickerProvider
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                         decoration: BoxDecoration(
-                          color: _getGradeColor(result.grade).withOpacity(0.1),
+                          color: _getGradeColor(result.grade).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -265,7 +265,7 @@ class _ResultsScreenState extends State<ResultsScreen> with SingleTickerProvider
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -381,7 +381,7 @@ class _ResultsScreenState extends State<ResultsScreen> with SingleTickerProvider
                               width: 70,
                               height: 70,
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFF6B00).withOpacity(0.1),
+                                color: const Color(0xFFFF6B00).withValues(alpha: 0.1),
                               ),
                               child: const Icon(Icons.person, size: 40, color: Color(0xFFFF6B00)),
                             ),

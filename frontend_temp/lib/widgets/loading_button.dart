@@ -30,7 +30,7 @@ class LoadingButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
           ),
           elevation: isLoading ? 0 : 2,
-          shadowColor: backgroundColor?.withOpacity(0.3) ?? const Color(0xFFFF6B00).withOpacity(0.3),
+          shadowColor: backgroundColor?.withValues(alpha: 0.3) ?? const Color(0xFFFF6B00).withValues(alpha: 0.3),
         ),
         child: isLoading
             ? Row(

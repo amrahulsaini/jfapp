@@ -172,21 +172,14 @@ class ApiService {
 
       // Check if response is valid JSON
       if (response.body.isEmpty) {
-        print('ERROR: Server returned empty response');
         return ApiResponse.error(error: 'Server returned empty response');
       }
-
-      // Debug: Print response
-      print('Response Status: ${response.statusCode}');
-      print('Response Body: ${response.body}');
 
       // Try to parse JSON, handle HTML error pages
       dynamic data;
       try {
         data = jsonDecode(response.body);
       } catch (e) {
-        print('ERROR parsing JSON: $e');
-        print('Response body was: ${response.body}');
         return ApiResponse.error(error: 'Unable to reach server. Please check if backend is running.');
       }
 
