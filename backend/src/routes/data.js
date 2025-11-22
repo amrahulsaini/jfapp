@@ -1,23 +1,37 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken, optionalAuth } = require('../middleware/auth');
-const { query } = require('../config/database');
+const db = require('../config/database');
 
-// GET /api/data/public - Get public data (no auth required)
-router.get('/public', async (req, res) => {
+// GET /api/data/students - Get all students from 2428main table
+router.get('/students', async (req, res) => {
   try {
-    // Example: Fetch public data from your PHP database
-    const data = await query('SELECT * FROM your_table LIMIT 10');
+    const [students] = await db.execute(
+      `SELECT 
+        roll_no,
+        enrollment_no,
+        student_name,
+        father_name,
+        mother_name,
+        branch,
+        mobile_no,
+        student_emailid as student_email_id,
+        student_section
+      FROM 2428main
+      ORDER BY roll_no ASC`
+    );
 
     res.json({
-      message: 'Public data retrieved successfully',
-      data: data
+      success: true,
+      message: 'Students retrieved successfully',
+      data: students
     });
 
   } catch (error) {
-    console.error('Get public data error:', error);
+    console.error('Get students error:', error);
     res.status(500).json({ 
-      error: 'Failed to fetch data' 
+      success: false,
+      error: 'Failed to fetch students data' 
     });
   }
 });

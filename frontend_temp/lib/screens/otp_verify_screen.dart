@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../widgets/loading_button.dart';
 import '../models/student_model.dart';
-import 'profile_screen.dart';
+import 'home_screen.dart';
 
 class OtpVerifyScreen extends StatefulWidget {
   final String email;
@@ -97,8 +97,8 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
             if (mounted) {
               Navigator.of(context).pushAndRemoveUntil(
                 PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => ProfileScreen(
-                    student: studentData,
+                  pageBuilder: (context, animation, secondaryAnimation) => HomeScreen(
+                    currentStudent: studentData,
                     batch: batch,
                   ),
                   transitionsBuilder: (context, animation, secondaryAnimation, child) {

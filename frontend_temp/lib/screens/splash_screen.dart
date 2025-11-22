@@ -3,7 +3,7 @@ import 'dart:async';
 import '../services/api_service.dart';
 import '../models/student_model.dart';
 import 'otp_login_screen.dart';
-import 'profile_screen.dart';
+import 'home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -56,15 +56,15 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       if (!mounted) return;
 
       if (response.success && response.data != null) {
-        // Session is valid, parse student data and go to profile
+        // Session is valid, parse student data and go to home
         final studentData = response.data!['student'];
         final student = StudentModel.fromJson(studentData);
         final batch = response.data!['batch'] ?? '2024-2028';
 
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => ProfileScreen(
-              student: student,
+            pageBuilder: (context, animation, secondaryAnimation) => HomeScreen(
+              currentStudent: student,
               batch: batch,
             ),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
