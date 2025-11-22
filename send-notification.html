@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Push Notification Admin - JF Foundation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #FF6B00 0%, #FF8C00 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .section h2 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #FF6B00;
+            box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .hint {
+            font-size: 13px;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #FF6B00 0%, #FF8C00 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(255, 107, 0, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 107, 0, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+        
+        .result strong {
+            display: block;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #FF6B00;
+        }
+        
+        .stat-card .label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .examples {
+            background: #fff3e0;
+            border-left: 4px solid #FF6B00;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        
+        .examples h4 {
+            color: #FF6B00;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .examples ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .examples li {
+            padding: 8px 0;
+            color: #666;
+            font-size: 13px;
+            border-bottom: 1px solid #ffe0b2;
+        }
+        
+        .examples li:last-child {
+            border-bottom: none;
+        }
+        
+        .examples code {
+            background: rgba(255, 107, 0, 0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #FF6B00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📢 Push Notification Center</h1>
+            <p>Send instant notifications to all JF App users</p>
+        </div>
+        
+        <div class="content">
+            <!-- Send to All Users -->
+            <div class="section">
+                <h2>📣 Send to All Users</h2>
+                
+                <div class="form-group">
+                    <label for="title">Notification Title</label>
+                    <input type="text" id="title" placeholder="e.g., 📢 Results Published!" maxlength="50">
+                    <div class="hint">Keep it short and clear (max 50 characters)</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="body">Notification Message</label>
+                    <textarea id="body" placeholder="e.g., Semester 3 results are now available. Check yours now!"></textarea>
+                    <div class="hint">Write a clear message that encourages users to open the app</div>
+                </div>
+                
+                <button class="btn" onclick="sendToAll()" id="sendAllBtn">
+                    Send to All Users
+                </button>
+                
+                <div class="examples">
+                    <h4>💡 Example Notifications:</h4>
+                    <ul>
+                        <li>📢 <strong>Results Published!</strong> - Semester 3 results are now available.</li>
+                        <li>🎉 <strong>New Feature!</strong> - You can now view detailed subject-wise analysis.</li>
+                        <li>⚠️ <strong>Update Available</strong> - New version with bug fixes is ready!</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Send Personalized -->
+            <div class="section">
+                <h2>👤 Send Personalized Notifications</h2>
+                
+                <div class="form-group">
+                    <label for="pTitle">Notification Title</label>
+                    <input type="text" id="pTitle" placeholder="e.g., Hey there!" maxlength="50">
+                </div>
+                
+                <div class="form-group">
+                    <label for="pBody">Personalized Message</label>
+                    <textarea id="pBody" placeholder="Use {student_name} to personalize the message"></textarea>
+                    <div class="hint">Use <code>{student_name}</code> placeholder - it will be replaced with actual names</div>
+                </div>
+                
+                <button class="btn" onclick="sendPersonalized()" id="sendPersonalizedBtn">
+                    Send Personalized to All
+                </button>
+                
+                <div class="examples">
+                    <h4>💡 Personalization Examples:</h4>
+                    <ul>
+                        <li>Hey <code>{student_name}</code>, your semester results are ready!</li>
+                        <li>Great news <code>{student_name}</code>! Check your improved marks.</li>
+                        <li><code>{student_name}</code>, don't forget to download your mark sheet.</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://jecrcfoundation.live/api/notifications';
+        
+        async function sendToAll() {
+            const title = document.getElementById('title').value.trim();
+            const body = document.getElementById('body').value.trim();
+            const btn = document.getElementById('sendAllBtn');
+            
+            if (!title || !body) {
+                showResult(false, 'Please fill in both title and message fields!');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Sending...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/send-to-all`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, body })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(true, 
+                        `Notification sent successfully!`,
+                        `Delivered to ${data.successCount} users${data.failureCount > 0 ? `, ${data.failureCount} failed` : ''}`
+                    );
+                    // Clear form
+                    document.getElementById('title').value = '';
+                    document.getElementById('body').value = '';
+                } else {
+                    showResult(false, data.message || 'Failed to send notification');
+                }
+            } catch (error) {
+                showResult(false, 'Network error: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Send to All Users';
+            }
+        }
+        
+        async function sendPersonalized() {
+            const title = document.getElementById('pTitle').value.trim();
+            const body_template = document.getElementById('pBody').value.trim();
+            const btn = document.getElementById('sendPersonalizedBtn');
+            
+            if (!title || !body_template) {
+                showResult(false, 'Please fill in both title and message fields!');
+                return;
+            }
+            
+            if (!body_template.includes('{student_name}')) {
+                if (!confirm('Your message doesn\'t include {student_name}. Send anyway?')) {
+                    return;
+                }
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Sending Personalized...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/send-personalized`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, body_template })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(true, 
+                        `Personalized notifications sent!`,
+                        `Delivered to ${data.successCount} users${data.failureCount > 0 ? `, ${data.failureCount} failed` : ''}`
+                    );
+                    // Clear form
+                    document.getElementById('pTitle').value = '';
+                    document.getElementById('pBody').value = '';
+                } else {
+                    showResult(false, data.message || 'Failed to send notifications');
+                }
+            } catch (error) {
+                showResult(false, 'Network error: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Send Personalized to All';
+            }
+        }
+        
+        function showResult(success, message, details = '') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result ${success ? 'success' : 'error'}`;
+            resultDiv.style.display = 'block';
+            
+            resultDiv.innerHTML = `
+                <strong>${success ? '✅ Success!' : '❌ Error'}</strong>
+                <p>${message}</p>
+                ${details ? `<p style="margin-top: 10px; opacity: 0.8;">${details}</p>` : ''}
+            `;
+            
+            // Scroll to result
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                resultDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Set default examples
+        document.getElementById('title').value = '📢 Results Published!';
+        document.getElementById('body').value = 'All semester results are now available. Check yours now!';
+        document.getElementById('pTitle').value = '📢 Hey there!';
+        document.getElementById('pBody').value = 'Hey {student_name}, check all your results now!';
+    </script>
+</body>
+</html>
