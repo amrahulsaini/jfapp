@@ -51,7 +51,19 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     try {
       final apiService = ApiService();
+      
+      // Check if user has token first
+      final hasToken = await apiService.isLoggedIn();
+      print('Has token: $hasToken');
+      
+      if (!hasToken) {
+        // No token, go to login
+        _navigateToLogin();
+        return;
+      }
+      
       final response = await apiService.checkSession();
+      print('Session check response: ${response.success}');
 
       if (!mounted) return;
 
@@ -75,30 +87,27 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         );
       } else {
         // No valid session, go to login
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const OtpLoginScreen(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            transitionDuration: const Duration(milliseconds: 500),
-          ),
-        );
+        print('Session invalid: ${response.error}');
+        _navigateToLogin();
       }
     } catch (e) {
       // Error checking session, go to login
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const OtpLoginScreen(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            transitionDuration: const Duration(milliseconds: 500),
-          ),
-        );
-      }
+      print('Session check error: $e');
+      _navigateToLogin();
     }
+  }
+
+  void _navigateToLogin() {
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => const OtpLoginScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 500),
+      ),
+    );
   }
 
   @override
