@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken, optionalAuth } = require('../middleware/auth');
-const db = require('../config/database');
+const { query } = require('../config/database');
 
 // GET /api/data/students - Get all students from 2428main table
 router.get('/students', async (req, res) => {
   try {
     console.log('Fetching all students from 2428main table...');
-    const [students] = await db.execute(
+    const students = await query(
       'SELECT roll_no, enrollment_no, student_name, father_name, mother_name, branch, mobile_no, student_emailid, student_section FROM `2428main` ORDER BY roll_no ASC'
     );
     
