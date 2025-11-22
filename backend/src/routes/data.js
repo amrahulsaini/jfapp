@@ -8,18 +8,7 @@ router.get('/students', async (req, res) => {
   try {
     console.log('Fetching all students from 2428main table...');
     const [students] = await db.execute(
-      `SELECT 
-        roll_no,
-        enrollment_no,
-        student_name,
-        father_name,
-        mother_name,
-        branch,
-        mobile_no,
-        student_emailid,
-        student_section
-      FROM 2428main
-      ORDER BY roll_no ASC`
+      'SELECT roll_no, enrollment_no, student_name, father_name, mother_name, branch, mobile_no, student_emailid, student_section FROM `2428main` ORDER BY roll_no ASC'
     );
     
     console.log(`Successfully fetched ${students.length} students`);
