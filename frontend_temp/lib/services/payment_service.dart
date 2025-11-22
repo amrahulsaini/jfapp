@@ -110,7 +110,7 @@ class PaymentService {
     }
   }
 
-  Future<bool> initiatePurchase(BuildContext context, PlanModel plan) async {
+  Future<void> initiatePurchase(BuildContext context, PlanModel plan, Function(bool) onComplete) async {
     try {
       final token = await _storageService.getToken();
       
@@ -136,10 +136,10 @@ class PaymentService {
       // Initialize Razorpay
       _razorpay = Razorpay();
       _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, (PaymentSuccessResponse response) {
-        _handlePaymentSuccess(context, response);
+        _handlePaymentSuccess(context, response, onComplete);
       });
       _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, (PaymentFailureResponse response) {
-        _handlePaymentError(context, response);
+        _handlePaymentError(context, response, onComplete);
       });
       _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, (ExternalWalletResponse response) {
         _handleExternalWallet(context, response);
@@ -162,13 +162,13 @@ class PaymentService {
       };
 
       _razorpay.open(options);
-      return true;
     } catch (e) {
+      onComplete(false);
       throw Exception('Payment initiation failed: $e');
     }
   }
 
-  void _handlePaymentSuccess(BuildContext context, PaymentSuccessResponse response) async {
+  void _handlePaymentSuccess(BuildContext context, PaymentSuccessResponse response, Function(bool) onComplete) async {
     try {
       final token = await _storageService.getToken();
       
@@ -189,6 +189,7 @@ class PaymentService {
       if (verifyResponse.statusCode == 200) {
         final data = json.decode(verifyResponse.body);
         if (data['success'] == true) {
+          onComplete(true);
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -198,16 +199,38 @@ class PaymentService {
             );
             Navigator.pop(context, true);
           }
+          return;
         }
+      }
+      
+      // If verification failed
+      onComplete(false);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Payment verification failed'),
+            backgroundColor: Color(0xFFFF3B30),
+          ),
+        );
       }
     } catch (e) {
       print('Payment verification error: $e');
+      onComplete(false);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Payment verification error: $e'),
+            backgroundColor: const Color(0xFFFF3B30),
+          ),
+        );
+      }
     } finally {
       _razorpay.clear();
     }
   }
 
-  void _handlePaymentError(BuildContext context, PaymentFailureResponse response) {
+  void _handlePaymentError(BuildContext context, PaymentFailureResponse response, Function(bool) onComplete) {
+    onComplete(false);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

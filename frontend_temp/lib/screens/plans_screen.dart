@@ -39,7 +39,7 @@ class _PlansScreenState extends State<PlansScreen> {
 
   Future<void> _purchasePlan(PlanModel plan) async {
     try {
-      // Show loading dialog
+      // Show loading dialog while creating order
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -50,25 +50,30 @@ class _PlansScreenState extends State<PlansScreen> {
         ),
       );
 
-      final success = await _paymentService.initiatePurchase(context, plan);
-      
-      if (mounted) {
-        Navigator.pop(context); // Close loading dialog
-        
-        if (success) {
-          // Show success and navigate back
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Plan purchased successfully! 🎉'),
-              backgroundColor: Color(0xFF34C759),
-            ),
-          );
-          Navigator.pop(context, true); // Return to previous screen with success
+      // Initiate payment - this will open Razorpay
+      await _paymentService.initiatePurchase(context, plan, (success) {
+        // This callback is called after payment is completed/failed
+        if (mounted) {
+          Navigator.pop(context); // Close loading dialog if still open
+          
+          if (success) {
+            // Payment verified successfully - navigate back
+            Navigator.pop(context, true);
+          }
         }
+      });
+      
+      // Close loading dialog after Razorpay opens
+      if (mounted) {
+        Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        Navigator.pop(context); // Close loading dialog
+        // Close loading dialog
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Payment failed: ${e.toString()}'),
