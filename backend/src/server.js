@@ -52,12 +52,14 @@ app.get('/health', (req, res) => {
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const dataRoutes = require('./routes/data');
+const resultsRoutes = require('./routes/results');
 
 // API routes
 const API_PREFIX = process.env.API_PREFIX || '/api';
 app.use(`${API_PREFIX}/auth`, authRoutes);
 app.use(`${API_PREFIX}/users`, userRoutes);
 app.use(`${API_PREFIX}/data`, dataRoutes);
+app.use(`${API_PREFIX}/results`, resultsRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
