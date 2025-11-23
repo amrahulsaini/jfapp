@@ -55,6 +55,19 @@ async function sendNotificationToUser(email, title, body, data = {}) {
       },
       data: data,
       tokens: fcmTokens,
+      android: {
+        notification: {
+          sound: 'default',
+          priority: 'high',
+        },
+      },
+      apns: {
+        payload: {
+          aps: {
+            sound: 'default',
+          },
+        },
+      },
     };
     
     const response = await admin.messaging().sendEachForMulticast(message);
